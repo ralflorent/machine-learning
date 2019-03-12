@@ -1,0 +1,56 @@
+% Machine Learning - Spring 2019
+% Mini-Project I
+% K-Means Clustering Algorithm
+% 
+% Created on March 12, 2019
+% Author: Ralph Florent <r.florent@jacobs-university.de>, Diogo Cosin <d.ayresdeoliveira@jacobs-university.de>
+
+% SET relevant packages
+\documentclass[a4 paper]{article}
+\usepackage[inner=2.0cm,outer=2.0cm,top=2.5cm,bottom=2.5cm]{geometry}
+\usepackage{setspace}
+\usepackage[rgb]{xcolor}
+\usepackage{verbatim}
+\usepackage{subcaption}
+\usepackage{amsgen,amsmath,amstext,amsbsy,amsopn,tikz,amssymb,tkz-linknodes}
+\usepackage{fancyhdr}
+\usepackage[colorlinks=true, urlcolor=blue,  linkcolor=blue, citecolor=blue]{hyperref}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{rotating}
+\hypersetup{%
+pdfauthor={Ralph Florent},%
+pdftitle={Project},%
+pdfkeywords={Machine Learning, K-mean Algorithm},%
+pdfcreator={PDFLaTeX},%
+pdfproducer={PDFLaTeX},%
+}
+%\usetikzlibrary{shadows}
+% \usepackage[francais]{babel}
+\usepackage{booktabs}
+\input{macros.tex}
+
+% START: Scripts for the PDF Document
+\begin{document}
+\homework{Mini Project \#1}{March 17, 2019}{Prof. Dr. Herbert Jaeger}{}{Ralph Florent, Diogo Cosin}
+
+\textbf{Task Description}: 
+The project is a programming exercise that requires to code the K-means clustering Machine Learning algorithm. Once implemented, the coded algorithm should be able to regroup into K(1, 2, 3, 200) clusters of digit images from the "Optical Character Recognition (OCR)" dataset provided by Prof. Dr. H. Jaeger. Additionally, a few examples of visualizations of the obtained results should be provided. 
+\\
+\newline
+\textbf{Summary}: Attached along this report, should it be found a Jupyter Notebook which contains the Python script that  implements the K-means clustering algorithm from the Dr. Herbert Jaeger's Machine Learning Lecture Notes. The algorithm is described in the following steps:
+\begin{itemize}
+    \item \textbf{Given}: a training data set (xi)i=1,...,N ∈ Rn, and a number K of clusters that one maximally wishes to obtain
+    \item \textbf{Initialization}: randomly assign the training points to K sets Sj (j = 1, . . . , K).
+    \item \textbf{Repeat}: For each set Sj, compute the mean µj = Sum(x)/|Sj| for x ∈ Sj. This mean vector µj is the “center of gravity” of the vector cluster Sj. Create new sets S'j by putting each data point xi into that set S'j where Modulus(xi − µj) is minimal. If some S'j remains empty, dismiss it and reduce K to K' by subtractring the number of dismissed empty sets (this happens rarely). Put Sj = S'j (for the nonempty sets) and K = K'.
+    \item \textbf{Termination}: Stop when in one iteration the sets remain unchanged.
+\end{itemize}
+
+\begin{center} 
+\large{\textbf{Analysis}} 
+\end{center}
+
+
+
+\end{document} 
+
+% END: Scripts for the PDF Document
