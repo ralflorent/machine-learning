@@ -1,25 +1,38 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# #  Machine Learning - Spring 2019
+# Machine Learning - Spring 2019
 # 
-# ## Mini-Project I
+# Mini-Project I
 # 
-# ### K-Means Clustering Algorithm
+# K-Means Clustering Algorithm
 # 
-# Created on: March 10, 2019 by Ralph Florent <r.florent@jacobs-university.de> and Diogo Cosin <d.ayresdeoliveira@jacobs-university.de>
+# Created on: March 10, 2019 by Ralph Florent <r.florent@jacobs-university.de> 
+# and Diogo Cosin <d.ayresdeoliveira@jacobs-university.de>
 # 
-# ### Description
+# Description
 # Write programmatically re-usable K-means clustering algorithm.
 # 
-# ### Summary
-# The script below allows to compute the K-means clustering Machine Learning algorithm. This script was inspired by the pseudocode/algorithm from the **Dr. Herbert Jaeger**'s Machine Learning Lecture Notes. The algorithm is described in the following steps:
-# * Given: a training data set (xi)i=1,...,N ∈ Rn, and a number K of clusters that one maximally wishes to obtain.
+# Summary
+# The script below allows to compute the K-means clustering Machine Learning 
+# algorithm. This script was inspired by the pseudocode/algorithm from the 
+# Dr. Herbert Jaeger**'s Machine Learning Lecture Notes. The algorithm is 
+# described in the following steps:
+# * Given: a training data set (xi)i=1,...,N ∈ Rn, and a number K of clusters 
+#	that one maximally wishes to obtain.
 # * Initialization: randomly assign the training points to K sets Sj (j = 1, . . . , K).
-# * Repeat: For each set Sj, compute the mean µj = Sum(x)/|Sj| for x ∈ Sj. This mean vector µj is the “center of gravity” of the vector cluster Sj. Create new sets S'j by putting each data point xi into that set S'j where Modulus(xi − µj) is minimal. If some S'j remains empty, dismiss it and reduce K to K' by subtractring the number of dismissed empty sets (this happens rarely). Put Sj = S'j (for the nonempty sets) and K = K'.
+# * Repeat: For each set Sj, compute the mean µj = Sum(x)/|Sj| for x ∈ Sj. 
+# 	This mean vector µj is the “center of gravity” of the vector cluster Sj. Create new 
+# 	sets S'j by putting each data point xi into that set S'j where Modulus(xi − µj) is 
+#	minimal. If some S'j remains empty, dismiss it and reduce K to K' by subtractring 
+#	the number of dismissed empty sets (this happens rarely). Put Sj = S'j 
+#	(for the nonempty sets) and K = K'.
 # * Termination: Stop when in one iteration the sets remain unchanged.
 # 
-# The algorithm was tested on the OCR datasets from the `DigitsBasicsRoutine.zip`, which was provided by Professor H. Jaeger, Machine Learning Professor at [Jacobs University Bremen](https://www.jacobs-university.de).
+#
+# The algorithm was tested on the OCR datasets from the `DigitsBasicsRoutine.zip`, 
+# which was provided by Professor H. Jaeger, Machine Learning Professor at [Jacobs 
+# University Bremen](https://www.jacobs-university.de).
 
 
 """ K-Means Clustering Algorithm """
@@ -236,7 +249,9 @@ def plot_figure(dataset):
 # 
 # ### Visualizations of the `x-digit` subset
 # 
-# The `get_data_points(digit)` function helps to obtain a specific subset of the selected digit between 0-9. In case no digits are specified, it loads the entire 2000 datapoints from the local file `./assets/mfeat-pix.txt`.
+# The `get_data_points(digit)` function helps to obtain a specific subset of the 
+# selected digit between 0-9. In case no digits are specified, it loads the entire 2000 
+# datapoints from the local file `./assets/mfeat-pix.txt`.
 # 
 # For example, to load the five-digit subset, the function `get_data_points(5)` is to be called.
 
@@ -262,9 +277,11 @@ plot_figure(sevens)
 
 # ### Application of the K-means clustering algorithm
 # 
-# The implemented-above K-means clustering algorithm computes the K-specified clusters. If the codebook vectors are required, the `get_codebooks(clusters)` should be invoked.
+# The implemented-above K-means clustering algorithm computes the K-specified clusters. If 
+# the codebook vectors are required, the `get_codebooks(clusters)` should be invoked.
 # 
-# First, let's run the algorithm for the `sevens` where K = 1, 2, 3, 200. Then, we visualize the respective generated clusters.
+# First, let's run the algorithm for the `sevens` where K = 1, 2, 3, 200. Then, 
+# we visualize the respective generated clusters.
 
 
 # Run k-means algorithm on the data set for the sevens class pattern for K = 1
@@ -339,3 +356,87 @@ for cluster in sevens_clustered_200:
 codebooks_cluster_200 = get_codebooks(sevens_clustered_200)
 plot_figure(codebooks_cluster_200)
 
+
+# ### Curiousity: Let us try to go beyond that
+# Let's analyze a set of mixed vector images and observe their behaviour while running the K-means clustering algorithm.:
+
+
+# Let's form a new dataset by gathering different digit-class patterns
+# since the zeros and sevens are already loaded, let's get the other digits
+RANGE_LIMIT = 20
+
+zero= zeros[0:RANGE_LIMIT]
+one = get_data_points(1)[0:RANGE_LIMIT]
+two = get_data_points(2)[0:RANGE_LIMIT]
+three = get_data_points(3)[0:RANGE_LIMIT]
+four = get_data_points(4)[0:RANGE_LIMIT]
+five = get_data_points(5)[0:RANGE_LIMIT]
+six = get_data_points(6)[0:RANGE_LIMIT]
+seven = sevens[0:RANGE_LIMIT]
+eight = get_data_points(8)[0:RANGE_LIMIT]
+nine = get_data_points(9)[0:RANGE_LIMIT]
+    
+mixed_digits = np.concatenate((zero, one, two, three, four, five, six, seven, eight, nine), axis=0)
+# Visualize dataset for the zeros dataset
+plot_figure(mixed_digits)
+
+
+# ### Now that we have a dataset of mixed digits, let's run K-means clustering on it
+# First, let's run the algorithm for the `mixed_digits` where K = 1, 2, 3, 200. Then, we will visualize the respective generated clusters.:
+
+
+# Run k-means algorithm on the data set for the mixed-digit class patterns for K = 1
+mixed_digits_clustered_1 = k_mean(mixed_digits, 1)
+
+# Visualize dataset for the mixed_digits_clustered_1 dataset
+for cluster in mixed_digits_clustered_1:
+    plot_figure(cluster)
+
+
+# Run k-means algorithm on the data set for the mixed-digit class patterns for K = 2
+mixed_digits_clustered_2 = k_mean(mixed_digits, 2)
+
+# Visualize dataset for the mixed_digits_clustered_2 dataset
+for cluster in mixed_digits_clustered_2:
+    plot_figure(cluster)
+
+
+# Run k-means algorithm on the data set for the mixed-digit class patterns for K = 3
+mixed_digits_clustered_3 = k_mean(mixed_digits, 3)
+
+# Visualize dataset for the mixed_digits_clustered_3 dataset
+for cluster in mixed_digits_clustered_3:
+    plot_figure(cluster)
+
+# Run k-means algorithm on the data set for the mixed-digit class patterns for K = 20
+mixed_digits_clustered_20 = k_mean(mixed_digits, 20)
+
+# Visualize dataset for the mixed_digits_clustered_20 dataset
+for cluster in mixed_digits_clustered_20:
+    plot_figure(cluster)
+
+
+# Run k-means algorithm on the data set for the mixed-digit class patterns for K = 200
+mixed_digits_clustered_200 = k_mean(mixed_digits, 200)
+
+# Visualize dataset for the mixed_digits_clustered_200 dataset
+for cluster in mixed_digits_clustered_200:
+    plot_figure(cluster)
+
+
+# ### Conlusion
+# Observing the results by running the K-mean clustering on the mixed digit-class pattern 
+# dataset, we notice that the digits that share certain similarities, such as slightly 
+# tilted to the left or to the right, tend to cluster together.  
+# 
+# More interestingly, certain digits like `zero`, `five`, `six`, `eight`, and `nine` are 
+# really close in terms of shape. That is, given a digit-pattern from the mentioned set, a 
+# classifier might misclassify the class-digit. For instance, the digit-pattern might have 
+# the shape of a `five` and the output results an `eight` when the true value is a `six`. 
+# That's definitely a closely-alike shape issue.
+# 
+# Also when we run the K-means algorithm for K = 20, we observe from the visualizations that 
+# based on the closely-alike shape issue mentioned above, digits like `seven`, `zeros`, 
+# and `four` are hardly misclassified. However, pair digits like `six-eight`, `seven-nine` 
+# for example, share certain similarities in the ending tail. That can constitute also a 
+# huge headache for the classifier.
