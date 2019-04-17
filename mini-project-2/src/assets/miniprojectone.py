@@ -106,10 +106,11 @@ def assign_randomly(data, K):
         The set of groups containing a subset of data points
         such as: arr(data[ arr(groups[ arr(points),..., n]), ..., K])
     """
-    np.random.shuffle(data)
-    if K > len(data): # protect array
-        K = len(data)
-    return np.array( [data[i::K] for i in range(K)])
+    data_temp = data.copy()
+    np.random.shuffle(data_temp)
+    if K > len(data_temp): # protect array
+        K = len(data_temp)
+    return np.array( [data_temp[i::K] for i in range(K)])
 
 
 def to_list(nested_array):
