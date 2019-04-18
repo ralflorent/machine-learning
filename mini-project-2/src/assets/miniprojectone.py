@@ -195,13 +195,15 @@ def k_means(data, K = 1):
     # Iterate over the Sj while computing Modulus(xi − µj) 
     while True:
         clone_clusters = [[] for i in range(K)] # clone clusters: list
+#         clone_clusters = [[]] * K
         
         for point in data:
             distances = [] # between data points and mean cluster
+            means = [np.mean(c, axis=0) for c in clusters]
             for j in range(K):
                 # compute mean of the cluster: codebook vector
-                mean_cluster = np.mean(clusters[j], axis=0)
-                
+#                 mean_cluster = np.mean(clusters[j], axis=0)
+                mean_cluster = means[j]
                 # compute distance between data point and mean cluster 
                 distance = np.linalg.norm(point - mean_cluster)
                 distances.append(distance)
@@ -220,7 +222,7 @@ def k_means(data, K = 1):
         if clone_clusters == to_list(clusters): break
             
         # update to optimal clusters
-        clusters  = to_array( deepcopy(clone_clusters) )
+        clusters  = to_array(clone_clusters)
         
     return clusters
 
