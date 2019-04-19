@@ -1,0 +1,31 @@
+ML, mini project 2 report
+
+Key points to discuss:
+
+- outline, task description, overview (on past related work) 
+
+- brief description of key concepts: linear regression as classifier, MSE, bias-variance 
+
+- explain code structure
+	- A-Z procedure
+	- Reusability of existing code (mini project one)
+	- Optimization of k-means algorithm performance 
+	- reference the imported packages
+
+- Analysis and Results
+	- describing results
+	- choosing optimal alpha and K
+		- why alpha = 0.0, K = 20
+		- illustrate with table and figure
+
+- conclusion
+
+- outlook
+	- things we could have tried:
+		- PCA for feature extraction
+		- Handwritten design 
+	- expectations
+
+- References
+
+- appendix: python script (well-documented)
