@@ -263,7 +263,7 @@ def project_to_pca_comps(X_bar, U):
     
     Returns
     -------
-    X_reduced: 2D-array shape: (N_samples, m_components)
+    X_reduced: 2D-array shape: (N_samples, m_components+1)
     """
     X_reduced = (U.T@X_bar.T).T
     X_reduced = np.insert(X_reduced, X_reduced.shape[1], 1, axis=1) # append bias 1 as the last feature
@@ -463,31 +463,14 @@ def k_fold_cv(dataset, nbr_folds=5, m=10, alpha=0.0, feature_extraction="k-means
         
         # Dimensionality reduction
         if feature_extraction == "k-means distances":
-            start = timer()
             clusters = k_means(x_train, m)
             codebooks = get_codebooks(clusters)
-            end = timer()
-            print("--- K-means elapsed time: {:1.10f}".format(end - start))
-            start = timer()
             x_train = select_features(x_train, codebooks)
             x_test = select_features(x_test, codebooks)
         elif feature_extraction == "pca":
-            start = timer()
             components, x_bar = get_pca_components(x_train, m)
-            end = timer()
-            print("--- K-means elapsed time: {:1.10f}".format(end - start))
-            start = timer()
             x_train = project_to_pca_comps(x_train, components)
             x_test = project_to_pca_comps(x_test, components)
-            print("X train shape: {}".format(x_train.shape))
-            print("X test shape: {}".format(x_test.shape))
-            
-
-#         if use_cluster_idx:
-#             x_train = select_min_dist_cluster(x_train)
-#             x_test = select_min_dist_cluster(x_test)
-        end = timer()
-        print("--- Feature extraction elapsed time: {:1.10f}".format(end - start))
         
         # compute models for training data
         model = compute_linreg(x_train, y_train, alpha)
@@ -517,13 +500,15 @@ def k_fold_cv(dataset, nbr_folds=5, m=10, alpha=0.0, feature_extraction="k-means
         
     return cv_accuracy_train, cv_accuracy_test, cv_MSE_train, cv_MSE_test
 
+print("***** BEGINNING OF THE DATA PROCESSING PIPELINE *****\n")
 
 # ## Loading training and testing data
 # The `load_data` function helps framing the data with numbered or one-hot encoding class labels to build an in-memory data frame. 
-# 
-# Given this data frame, let's load the first 100 digit-patterns as training data and the second 100 as testing data, for a specific digit, that is, we divide the original dataset into two partitions, training and testing, each containing 1000 observations.
-
-# In[11]:
+#
+# Given this data frame, let's load the first 100 digit-patterns as training 
+# data and the second 100 as testing data, for a specific digit, that is, 
+# we divide the original dataset into two partitions, training and testing, 
+# each containing 1000 observations.
 
 
 dataframe = load_data(one_hot_encoding=True)
@@ -531,30 +516,15 @@ dataframe = load_data(one_hot_encoding=True)
 # Distribute dataframe into training and testing data
 training_data, testing_data = split_data(dataframe)
 
-print(dataframe.shape, training_data.shape, testing_data.shape)
 
-
-# ## Cross-validation with *K-means* Feature Extraction
-
-# ### Seeking the Optimal Number of Clusters *K*
-
-# We now try different combinations of alpha and number of K-means clusters, checking the metrics for each combination. The objective here is to optimize the classifier improving, this way, the performance metrics. In this scenario, we constantly set $\alpha$ to zero.
-# 
+# ## Cross-validation with *K-means* as Feature Extraction
 # The results are stored in the dictionary `grid_search_metrics`.
 
-# In[15]:
-
-
+k_fold = 10
 alpha_list = [0.0]
-k_list = [2, 5, 10, 20, 50, 100, 200, 400, 800]
+k_list = [100]
 
-
-# In[49]:
-
-
-k_fold = 10 
-
-# define dictionary where the result for each K iteration is stores
+# define dictionary where the cross-validations results are stored
 grid_search_metrics = {}
 grid_search_metrics["alpha"] = []
 grid_search_metrics["K"] = []
@@ -563,8 +533,10 @@ grid_search_metrics["cv_acc_test"] = []
 grid_search_metrics["cv_MSE_train"] = []
 grid_search_metrics["cv_MSE_test"] = []
 
+start = timer() # measure the cross-validation elapsed time
+
 for k in k_list:
-    print("=> Processing k={}".format(k))    
+    print("=> Processing cross-validation with K-means and K={}".format(k))    
     for alpha in alpha_list:
         grid_search_metrics["alpha"].append(alpha)
         grid_search_metrics["K"].append(k)
@@ -582,127 +554,22 @@ for k in k_list:
         grid_search_metrics["cv_MSE_train"].append(cv_MSE_train)
         grid_search_metrics["cv_MSE_test"].append(cv_MSE_test)
 
+end = timer() # measure the cross-validation elapsed time
+print("- Cross-validation with K-means total elapsed time: {:1.10f}s".format(end - start))
 
-# In[52]:
-
-
-alpha_list = [0.0]
-pc_list = [2, 10, 25, 50, 100, 200, 239]
-
-
-# ### Visualizang the Results for DIfferent Number of Clusters *K*
-
-# First, we load the cross-validation results into a pandas Dataframe to make the results interpretability easier.
-
-# In[17]:
-
-
+# We load the cross-validation results into a pandas Dataframe to make 
+# the results interpretability easier.
 cv_k_results = pd.DataFrame(grid_search_metrics)
-cv_k_results
-
-
-# Now we plot the results for different number of clusters *K*.
-
-# In[20]:
-
-
-K_values = cv_k_results["K"]
-plt.plot(K_values, 1-cv_k_results["cv_acc_train"], label=r"$MISS_{train}$")
-plt.plot(K_values, 1-cv_k_results["cv_acc_test"], label=r"$MISS_{validate}$")
-plt.plot(K_values, cv_k_results["cv_MSE_train"], label=r"$MSE_{train}$")
-plt.plot(K_values, cv_k_results["cv_MSE_test"], label=r"$MSE_{validate}$")
-plt.title("Performance Metrics for Different Number of Clusters")
-plt.xlabel(r"Number of Clusters $K$")
-plt.legend();
-
-
-# ### Seeking the Optimal Ridge factor $\alpha$
-
-# Now, we apply the same cross-validation strategy to the paramter *alpha*. In this case, we constantly set *K* to 50 clusters.
-
-# In[21]:
-
-
-alpha_list = [0.0, 0.5, 1, 10, 25, 50, 100, 250, 500, 1000]
-k_list = [50]
-
-
-# In[22]:
-
-
-k_fold = 10 
-
-# define dictionary where the result for each K iteration is stores
-grid_search_metrics = {}
-grid_search_metrics["alpha"] = []
-grid_search_metrics["K"] = []
-grid_search_metrics["cv_acc_train"] = []
-grid_search_metrics["cv_acc_test"] = []
-grid_search_metrics["cv_MSE_train"] = []
-grid_search_metrics["cv_MSE_test"] = []
-
-for k in k_list:
-    print("=> Processing k={}".format(k))    
-    for alpha in alpha_list:
-        grid_search_metrics["alpha"].append(alpha)
-        grid_search_metrics["K"].append(k)
-        
-        # execute the cross-validation
-        cv_results = k_fold_cv(training_data, k_fold, k, alpha)
-        
-        # unpack the results
-        cv_accuracy_train, cv_accuracy_test = cv_results[0], cv_results[1]
-        cv_MSE_train, cv_MSE_test = cv_results[2], cv_results[3]
-        
-        # save the results
-        grid_search_metrics["cv_acc_train"].append(cv_accuracy_train)
-        grid_search_metrics["cv_acc_test"].append(cv_accuracy_test)
-        grid_search_metrics["cv_MSE_train"].append(cv_MSE_train)
-        grid_search_metrics["cv_MSE_test"].append(cv_MSE_test)
-
-
-# ### Visualizang the Results for DIfferent $\alpha$ Values
-
-# Again, we load the cross-validation results into a pandas Dataframe to make the results interpretability easier.
-
-# In[23]:
-
-
-cv_alpha_results = pd.DataFrame(grid_search_metrics)
-cv_alpha_results
-
-
-# Now we plot the results for different values of $\alpha$.
-
-# In[99]:
-
-
-alpha_values = cv_alpha_results["alpha"]
-plt.plot(alpha_values, 1-cv_alpha_results["cv_acc_train"], marker="o", label=r"$MISS_{train}$")
-plt.plot(alpha_values, 1-cv_alpha_results["cv_acc_test"], marker="o", label=r"$MISS_{validate}$")
-plt.plot(alpha_values, cv_alpha_results["cv_MSE_train"], marker="o", label=r"$MSE_{train}$")
-plt.plot(alpha_values, cv_alpha_results["cv_MSE_test"], marker="o", label=r"$MSE_{validate}$")
-plt.title(r"Performance Metrics for Different $\alpha$ Values for $K$=50")
-plt.xlabel(r"$\alpha$")
-plt.xticks(range(0, 1001, 100))
-plt.legend();
-
+cv_k_results["cv_miss_train"] = 1 - cv_k_results["cv_acc_train"]
+cv_k_results["cv_miss_test"] = 1 - cv_k_results["cv_acc_test"]
+print("--- Results for cross-validation with K-means as feature extraction ---")
+print(cv_k_results)
+print()
 
 # ## Cross-validation with PCA Feature Extraction
-
-# ### Seeking the Optimal Number of Principal Components
-
-# In[81]:
-
-
+k_fold = 10 
 alpha_list = [0.0]
-pc_list = [2, 10, 20, 40, 50, 60, 80, 100, 125, 150, 175, 200, 239]
-
-
-# In[82]:
-
-
-k_fold = 10 
+pc_list = [100]
 
 # define dictionary where the result for each K iteration is stores
 grid_search_metrics = {}
@@ -713,8 +580,10 @@ grid_search_metrics["cv_acc_test"] = []
 grid_search_metrics["cv_MSE_train"] = []
 grid_search_metrics["cv_MSE_test"] = []
 
+start = timer() # measure the cross-validation elapsed time
+
 for pc in pc_list:
-    print("=> Processing k={}".format(k))    
+    print("=> Processing cross-validation with PCA and PC={}".format(pc))    
     for alpha in alpha_list:
         grid_search_metrics["alpha"].append(alpha)
         grid_search_metrics["PC"].append(pc)
@@ -732,100 +601,22 @@ for pc in pc_list:
         grid_search_metrics["cv_MSE_train"].append(cv_MSE_train)
         grid_search_metrics["cv_MSE_test"].append(cv_MSE_test)
 
+end = timer() # measure the cross-validation elapsed time
+print("- Cross-validation with PCA total elapsed time: {:1.10f}s".format(end - start))
 
-# In[83]:
-
-
+print("--- Results for cross-validation with PCA as feature extraction ---")
 cv_pc_results = pd.DataFrame(grid_search_metrics)
-cv_pc_results
-
-
-# In[84]:
-
-
-pc_values = cv_pc_results["PC"]
-plt.plot(pc_values, 1-cv_pc_results["cv_acc_train"], label=r"$MISS_{train}$")
-plt.plot(pc_values, 1-cv_pc_results["cv_acc_test"], label=r"$MISS_{validate}$")
-plt.plot(pc_values, cv_pc_results["cv_MSE_train"], label=r"$MSE_{train}$")
-plt.plot(pc_values, cv_pc_results["cv_MSE_test"], label=r"$MSE_{validate}$")
-plt.title("Performance Metrics for Different Number of Principal Components")
-plt.xlabel(r"Number of Principal Components")
-plt.legend();
-
-
-# We notice that, the model is overfitting for a higher number of principal components, given that the $MISS_{train}$ keeps monotically decreasing, while $MISS_{test}$ presents the *U-shape*. Thus, setting the number of components to 80 (the best $MISS_{test}$ score), let's seek the optimal $\alpha$ value.
-
-# ### Seeking the Optimal $\alpha$ Value
-
-# In[85]:
-
-
-alpha_list = [0.0, 0.5, 1, 10, 25, 50, 100, 250, 500, 1000]
-pc_list = [80]
-
-
-# In[86]:
-
-
-k_fold = 10 
-
-# define dictionary where the result for each K iteration is stores
-grid_search_metrics = {}
-grid_search_metrics["alpha"] = []
-grid_search_metrics["PC"] = []
-grid_search_metrics["cv_acc_train"] = []
-grid_search_metrics["cv_acc_test"] = []
-grid_search_metrics["cv_MSE_train"] = []
-grid_search_metrics["cv_MSE_test"] = []
-
-for pc in pc_list:
-    print("=> Processing pc={}".format(pc))    
-    for alpha in alpha_list:
-        grid_search_metrics["alpha"].append(alpha)
-        grid_search_metrics["PC"].append(pc)
-        
-        # execute the cross-validation
-        cv_results = k_fold_cv(training_data, k_fold, pc, alpha, "pca")
-        
-        # unpack the results
-        cv_accuracy_train, cv_accuracy_test = cv_results[0], cv_results[1]
-        cv_MSE_train, cv_MSE_test = cv_results[2], cv_results[3]
-        
-        # save the results
-        grid_search_metrics["cv_acc_train"].append(cv_accuracy_train)
-        grid_search_metrics["cv_acc_test"].append(cv_accuracy_test)
-        grid_search_metrics["cv_MSE_train"].append(cv_MSE_train)
-        grid_search_metrics["cv_MSE_test"].append(cv_MSE_test)
-
-
-# ### Visualizang the Results for DIfferent $\alpha$ Values
-
-# In[102]:
-
-
-cv_pc_results = pd.DataFrame(grid_search_metrics)
-cv_pc_results
-
-
-# In[100]:
-
-
-alpha_values = cv_pc_results["alpha"]
-plt.plot(alpha_values, 1-cv_pc_results["cv_acc_train"], label=r"$MISS_{train}$")
-plt.plot(alpha_values, 1-cv_pc_results["cv_acc_test"], label=r"$MISS_{validate}$")
-plt.plot(alpha_values, cv_pc_results["cv_MSE_train"], label=r"$MSE_{train}$")
-plt.plot(alpha_values, cv_pc_results["cv_MSE_test"], label=r"$MSE_{validate}$")
-plt.title(r"Performance Metrics for Different $\alpha$ Values with 80 PCs")
-plt.xlabel(r"$\alpha$")
-plt.legend();
+cv_pc_results["cv_miss_train"] = 1 - cv_pc_results["cv_acc_train"]
+cv_pc_results["cv_miss_test"] = 1 - cv_pc_results["cv_acc_test"]
+print(cv_pc_results)
+print()
 
 
 # ## Assessing Model Perfomance on the Testing Data
 
-# Now that the best model configuration was defined by the previous cross-validation, we train this model configuration on the full training data and assess its performance on the Testing Data, so far, a completely untouched dataset.
-
-# In[26]:
-
+# Now that the best model configuration was defined by the previous 
+# cross-validation, we train this model configuration on the full training data
+# and assess its performance on the Testing Data, so far, a completely untouched dataset.
 
 nbr_clusters = 100
 
@@ -853,43 +644,8 @@ accuracy_test = check_accuracy(Z_test, Z_test_pred)
 MSE_test = check_MSE(Z_test, Z_test_pred)
 
 # print metrics
-print("Test Missclassification is {:1.2f}%.".format(100*(1-accuracy_test)))
-print("Test MSE is {:1.4f}.".format(MSE_test))
+print("--- Results of the model in the Test Data ---")
+print("Test Missclassification for the chosen model is {:1.2f}%.".format(100*(1-accuracy_test)))
+print("Test MSE for the chosen model is {:1.4f}.".format(MSE_test))
 
-
-# ## Comparing the Train, Validation and Test Performance
-
-# Let's compare the performance in the three dataset partitions for the chosen model configuration, that is, *K* = 100 and $\alpha$ = 0. For this, we use a bar plot comparing the two metrics on the three scenarios.
-
-# In[106]:
-
-
-cv_k50_results = cv_k_results.loc[cv_k_results["K"] == 100]
-cv_k50_results["cv_miss_train"] = 1 - cv_k50_results["cv_acc_train"]
-cv_k50_results["cv_miss_test"] = 1 - cv_k50_results["cv_acc_test"]
-cv_k50_results
-
-
-# In[107]:
-
-
-ind = np.arange(2)
-width = 0.27
-
-train_metrics = cv_k50_results[["cv_MSE_train", "cv_miss_train"]]
-validate_metrics = cv_k50_results[["cv_MSE_test", "cv_miss_test"]]
-test_metrics = [MSE_test, 1-accuracy_test]
-
-# convert to vector because of plt.bar
-train_metrics = np.array(train_metrics)[0]
-validate_metrics = np.array(validate_metrics)[0]
-
-rects_train = plt.bar(ind, train_metrics, width, align="center")
-rects_validate = plt.bar(ind + width, validate_metrics, width, align="center")
-rects_test = plt.bar(ind + width*2, test_metrics, width, align="center")
-
-plt.title("Model Perfomance on Different Dataset Partitions")
-plt.xlabel('Metric')
-plt.xticks(ind+width, ["MSE", "MISS"])
-plt.legend((rects_train[0], rects_validate[0], rects_test[0]), ('Train', 'Validation', 'Test'));
-
+print("\n***** END OF THE DATA PROCESSING PIPELINE *****")
