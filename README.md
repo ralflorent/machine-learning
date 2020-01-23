@@ -1,2 +1,15 @@
-# Machine Learning
-Machine learning (ML) is all about algorithms which are fed with (large quantities of) real-world data, and which return a compressed model' of the data. An example is the world model' of a robot: the input data are sensor data streams, from which the robot learns a model of its environment -- needed, for instance, for navigation. Another example is a spoken language model: the input data are speech recordings, from which ML methods build a model of spoken English -- useful, for instance, in automated speech recognition systems. There is a large number of formalisms in which such models can be cast, and an equally large diversity of learning algorithms. However, there is a relatively small number of fundamental challenges which are common to all of these formalisms and algorithms: most notably, the "curse of dimensionality'' and the almost deadly-dangerous problem of under- vs. overfitting. This lecture introduces such fundamental concepts and illustrates them with a choice of elementary model formalisms (linear classifiers and regressors, radial basis function networks, clustering, mixtures of Gaussians, Parzen windows). Furthermore, the course also provides a refresher of the requisite concepts from probability theory, statistics, and linear algebra.
+# Introduction to Machine Learning
+Machine learning (ML) is all about algorithms which are fed with (large
+quantities of) real-world data, and which return a compressed model of the data.
+
+### Content
+This repository consists of two mini-projects based on the OCR datasets from the
+`DigitsBasicsRoutine.zip`, which was provided by Professor Dr. Herbert Jaeger,
+Machine Learning Professor at [Jacobs University](https://jacobs-university.de).
+
+### License
+The content of this work is licensed under [MIT License](LICENSE).
+
+### Authors
+* Diogo Cosin <d.ayresdeoliveira@jacobs-university.de>
+* Ralph Florent <r.florent@jacobs-university.de>
